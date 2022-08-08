@@ -1,1 +1,1 @@
-https://terugokoizumi.github.io/gpawinstall
+https://terugokoizumi.github.io/gpawinstall/index
