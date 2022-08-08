@@ -1,1 +1,1 @@
-https://TerugoKoizumi.github.io/gpawinstall/method
+https://terugokoizumi.github.io/gpawinstall/method
