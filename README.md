@@ -1,0 +1,1 @@
+https://github.com/TerugoKoizumi/gpawinstall/blob/7ca8f62711021086425747a5949988398ae6ca40/method.md
