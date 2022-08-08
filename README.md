@@ -1,1 +1,1 @@
-https://github.com/TerugoKoizumi/gpawinstall.git
+http(s)://TerugoKoizumi.github.io/gpawinstall
