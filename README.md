@@ -1,1 +1,1 @@
-git@github.com:TerugoKoizumi/gpawinstall.git
+https://github.com/TerugoKoizumi/gpawinstall.git
