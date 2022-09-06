@@ -29,42 +29,26 @@ make
 tar -xvzf Cu_001_7x7_scf_embpot.tgz
 ```
 
-でファイルを解凍し、ディレクトリ内に入ります。
-`qsub.sh`は
+でファイルを解凍し、ディレクトリ内に入ります。job scriptは
 
 ```
 #!/bin/sh
 #SBATCH -J  Cu_surface
 #SBATCH -p  cmdinteractive
 #SBATCH -N  1
-#SBATCH -n  4
-
-module load intel/2020.2.254
-module load intelmpi/2020.2.254
-#Above settings should be consistent with those used in the comparison.
-
-#disable OPENMP parallelism
-export OMP_NUM_THREADS=1
-export I_MPI_ADJUST_ALLGATHERV=2
-export I_MPI_PIN=1
-cat $PE_HOSRFILE | awk '{ print$1":"$2/ENVIRON["OMP_NUM_THREADS"]}' >hostfile.$JOB_ID
-mpirun -n 64  #!/bin/sh
-#SBATCH -J  Cu_surface
-#SBATCH -p  cmdinteractive
-#SBATCH -N  1
-#SBATCH -n  4
+#SBATCH -n  64
 
 module load intel_compiler/2020.2.254
-module load intelmpi/2020.2.254
+module load intel_mpi/2020.2.254
 #Above settings should be consistent with those used in the comparison.
 
 #disable OPENMP parallelism
-export OMP_NUM_THREADS=1
-export I_MPI_ADJUST_ALLGATHERV=2
-export I_MPI_PIN=1
+#export OMP_NUM_THREADS=1
+#export I_MPI_ADJUST_ALLGATHERV=2
+#export I_MPI_PIN=1
+
 cat $PE_HOSRFILE | awk '{ print$1":"$2/ENVIRON["OMP_NUM_THREADS"]}' >hostfile.$JOB_ID
-mpirun -n 64  /home/〜/Embedding/EmApw/emapw.out
-rm -f hostfile.$JOB_ID/EmApw/emapw.out
+srun  /home/t0102/t010200/Embedding/EmApw/emapw.out
 rm -f hostfile.$JOB_ID
 ```
 
