@@ -1,3 +1,1 @@
-https://terugokoizumi.github.io/gpawinstall/index
-
-https://terugokoizumi.github.io/gpawinstall/install
+https://keisuke-mac.github.io/embedding/
