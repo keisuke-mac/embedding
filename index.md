@@ -1,4 +1,4 @@
-# Embedding法
+# Embedding法(未完)
 
 ## 実行プログラム
 
@@ -36,7 +36,7 @@ tar -xvzf Cu_100_7x7_scf_embpot.tgz
 - d3ps-pot.dat（FCC Cu 原子球外側の領域のポテンシャル）
 - g_emb.dat（表面領域とバルクとの境界面の構造データ）
 - orb.dat（DOSを射影する軌道のデータ：s, px, py, pz・・・・）
-> 
+
 があることをご確認ください。さらにサブfolderの./e_pot_scf中に`00.vemb.dat`があることを確認してください。
 
 
