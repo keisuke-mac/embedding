@@ -1,35 +1,47 @@
-# pytestの結果
+# Embedding法
 
 ## 実行プログラム
 
-`EmApw.tgz`を任意のディレクトリにコピーし
+`EmApw.tgz`を任意のディレクトリにコピーします。次にファイルを解凍をします。
 
 ```
 tar -xvzf EmApw.tgz
 ```
-で圧縮ファイルを解凍し
+解凍できたら
 
 ```
 cd EmApw
 ```
 
-でディレクトリに入り
+でディレクトリに入りmakeします。
 
 ```
 make
 ```
 
-`emapw.out`が作成されていたら成功です。
+カレントディレクトリ内に`emapw.out`が作成されていたら成功です。
 
 
 ## Cu(100)のSCF計算
 
 
 ```
-tar -xvzf Cu_001_7x7_scf_embpot.tgz
+tar -xvzf Cu_100_7x7_scf_embpot.tgz
 ```
 
-でファイルを解凍し、ディレクトリ内に入ります。job scriptは
+でファイルを解凍し、ディレクトリ内に入ります。
+
+- input.dat
+- param.dat
+- d3ps-pot.dat（FCC Cu 原子球外側の領域のポテンシャル）
+- g_emb.dat（表面領域とバルクとの境界面の構造データ）
+- orb.dat（DOSを射影する軌道のデータ：s, px, py, pz・・・・）
+> 
+があることをご確認ください。さらにサブfolderの./e_pot_scf中に`00.vemb.dat`があることを確認してください。
+
+
+<br>
+続いて計算です。job scriptは
 
 ```
 #!/bin/sh
@@ -41,11 +53,6 @@ tar -xvzf Cu_001_7x7_scf_embpot.tgz
 module load intel_compiler/2020.2.254
 module load intel_mpi/2020.2.254
 #Above settings should be consistent with those used in the comparison.
-
-#disable OPENMP parallelism
-#export OMP_NUM_THREADS=1
-#export I_MPI_ADJUST_ALLGATHERV=2
-#export I_MPI_PIN=1
 
 cat $PE_HOSRFILE | awk '{ print$1":"$2/ENVIRON["OMP_NUM_THREADS"]}' >hostfile.$JOB_ID
 srun  /home/t0102/t010200/Embedding/EmApw/emapw.out
