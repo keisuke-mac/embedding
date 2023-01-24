@@ -1,35 +1,157 @@
-# Embedding法(未完)
+# Embedding法でのDOS計算(未完)
 
 以下で使うプログラムは圧縮ファイルとしてsmith上の`/home/kota/Embedding/compressed_file`に置いてあります。使用される場合は必要なものをこのディレクトリからコピーするようにしてください。
 
-## 実行プログラム
+## SCF計算におけるgemapw
 
-`EmApw.tgz`を任意のディレクトリにコピーします。次にファイルを解凍をします。
+`Cu_001_7x7_scf_embpot.tgz`を任意のディレクトリにコピーします。次にファイルを解凍をしディレクトリ内に移動してください。ここでの計算はksup1とksup2の２ステップに分かれているので順に説明していきます。
+
+### ksup1
+input.datは
+```
+   0.d0      33.813626d0
+  90.d0      33.813626d0
+ 1         0.d0
+ 14.1d0    3.5d0
 
 ```
-tar -xvzf EmApw.tgz
+param.datは
 ```
-解凍できたら
+! // parameter file
+! // Cu_001_7x7 ksup1
+& param
+
+kopr=1
+kdsp=0
+kvx=0
+kvy=0
+ksup=1
+kinput_e=1
+klt_rad=1
+/
 
 ```
-cd EmApw
-```
+になります。それぞれ`input.dat.ksup1`と`param.dat.ksup1`に保管されているので計算の際はコピーして使用するようにしてください。job.scriptは
 
-でディレクトリに入ります。smith上であればコンパイラloadしてください(最新のものは対応できていなかったりすることがあるので避けましょう)。
 ```
-module load intel/2020.2.254
-module load intelmpi/2020.2.254
+#!/bin/sh
+#SBATCH -J  Cu_7x7_embpot
+#SBATCH -p  i8cpu
+#SBATCH -N  1
+#SBATCH -n  1
+
+module load intel_compiler/2020.2.254
+module load intel_mpi/2020.2.254
+#Above settings should be consistent with those used in the comparison.
+
+cat $PE_HOSRFILE | awk '{ print$1":"$2/ENVIRON["OMP_NUM_THREADS"]}' >hostfile.$JOB_ID
+srun  /home/k0277/k027705/Embedding/gemapw/gemapw.out
+
+rm -f hostfile.$JOB_ID
 ```
-ohtakaではコンパイラを自動的にloadするので必要はありません。準備が整えば
+になります。計算の結果出力されるファイルは`kpoint.dat`で、次のステップ(ksup2)で使用します。
+
+### ksup2
+このステップでは`input.dat` 、`param.dat`の他にいくつか必要なファイルがあり
+
+- kpoint.dat
+- d3ps-pot.dat
+- d3mt-pot.dat
+
+の三つになります。一つ目の`kpoint.dat`はksup1での出力ファイルで、あとの二つは`L-apw`での計算結果になります。(編集中)
+
+
+### ksup1
+input.datは
 ```
-make
+   0.d0       4.830518d0
+  90.d0       4.830518d0
+ 2.415259d0    2.415259d0    3.415692d0 
+ 1         0.d0
+ 1        90.d0
+ 1       -90.d0
+ 1       180.d0
+ 2         0.d0
+ 2        45.d0
+ 2        90.d0
+ 2       135.d0
+ 14.1d0    3.5d0    3.5d0
+ 1
+ 0.d0    0.d0   2.4d0   2.4d0    ! atomic coordinates
+ 29.d0   7
+ 100   200   210   300   310   325    405
+ 2.d0  2.d0  6.d0  2.d0  6.d0  10.d0  1.d0
+ 60.d0    32.d0
+ 3.415692d0     3.415692d0      0.d0
+-3.415692d0     3.415692d0      0.d0
+ 2
+ -0.5d0    0.32500628d0   31
 ```
+param.datは
+```
+! // parameter file
+! // Cu_001_7x7 ksup2
+& param
 
-カレントディレクトリ内に`emapw.out`が作成されていたら成功です。
+kopr=8
+kdsp=0
+
+kt=1
+ka=1
+korb=7
+kmsh=461
+
+klmx=7
+klpmx=6
+
+km1=30
+km2=30
+
+kfp=1
+ksup=2
+kbff=3
+
+klt_rad=1
+kcnt=1
+
+k2el=0
+kdiag=1
+kinput_e=1
+btyp='sn'
+/
+
+```
+になります。それぞれ`input.dat.ksup2`と`param.dat.ksup2`に保管されているので計算の際はコピーして使用するようにしてください。job.scriptは
+
+```
+#!/bin/sh
+#SBATCH -J  Cu_7x7_embpot
+#SBATCH -p  i8cpu
+#SBATCH -N  1
+#SBATCH -n  1
+
+module load intel_compiler/2020.2.254
+module load intel_mpi/2020.2.254
+#Above settings should be consistent with those used in the comparison.
+
+cat $PE_HOSRFILE | awk '{ print$1":"$2/ENVIRON["OMP_NUM_THREADS"]}' >hostfile.$JOB_ID
+srun  /home/k0277/k027705/Embedding/gemapw/gemapw.out
+
+rm -f hostfile.$JOB_ID
+```
+になります。出力は
+
+- g_emb.dat
+- 00.band.dat
+- 00.vemb.dat
+- 00.output
+
+になります。
+
+また、embeddingポテンシャル作成に用いられた原子座標などのパラメータが`g_emb.dat`に出力されます。このファイルは次の`emapw`での計算で使用します。また`00.vemb.dat`にembeddingポテンシャルが出力されます。
 
 
-## Cu(100)のSCF計算
-
+## SCF計算におけるemapw
 
 ```
 tar -xvzf Cu_001_7x7_scf.tgz
@@ -47,70 +169,9 @@ tar -xvzf Cu_001_7x7_scf.tgz
 <br>
 次にサブfolderの./e_pot_scf中に`00.vemb.dat`を用意します(元々あるかもしれませんが中身がないダミーです)。このファイルは`Cu_001_7x7_scf_embpot.tgz`を解凍すれば展開されるので任意のディレクトリで解凍し、コピーするかシンボリックリンクするかしてください。
 
-<br>
-### ohtakaでの計算
-続いて計算です。job scriptは
-
-```
-#!/bin/sh
-#SBATCH -J  Cu_surface
-#SBATCH -p  cmdinteractive
-#SBATCH -N  1
-#SBATCH -n  64
-
-module load intel_compiler/2020.2.254
-module load intel_mpi/2020.2.254
-#Above settings should be consistent with those used in the comparison.
-
-cat $PE_HOSRFILE | awk '{ print$1":"$2/ENVIRON["OMP_NUM_THREADS"]}' >hostfile.$JOB_ID
-srun  ~/EmApw/emapw.out
-rm -f hostfile.$JOB_ID
-```
-
-です。ただし`emapw.out`のパスはご自身のものを指定してください。またコンパイラもご自身の環境により適宜変更してください。
-
-### smithでの計算
-
-```
-#$ -S /bin/bash
-#$ -cwd
-#$ -q xh2.q
-#$ -pe x24 24
-#$ -N Cu001_7x7 
-#$ -j y
-
-module load intel/2020.2.254
-module load intelmpi/2020.2.254
-#Above settings should be consistent with those used in the comparison.
-
-#disable OPENMP parallelism
-export OMP_NUM_THREADS=1
-export I_MPI_ADJUST_ALLGATHERV=2
-export I_MPI_PIN=1
-cat $PE_HOSRFILE | awk '{ print$1":"$2/ENVIRON["OMP_NUM_THREADS"]}' >hostfile.$JOB_ID
-mpirun -n 64  /home/kota/Embedding/EmApw/emapw.out
-rm -f hostfile.$JOB_ID
-```
-ohtakaと同様にシンボリックリンクなどはご自身の環境に応じて変更を加えてください。
 
 
-### 計算状況の確認
-計算の収束状況は
-```
-grep "jte, rms" 00.output
-```
-により確認できます。rmsは入力電子密度と出力電子密度の差をユニットセルで平均したものです（Hartree原子単位）。
-<br>
-計算が収束すると
-```
-grep evcm 00.output
-```
-により真空準位を確認することができます。今回のCuのフェルミエネルギー$\mathrm{E}_F$は$0.325\, \mathrm{Hartree}$なので仕事関数は$(\mathrm{evcm}-0.325)\times 27.211386\,eV$と計算でき、結果から仕事関数は4.59eVとなるはずです。
-
-
-## input
-
-
+`input.dat`は
 ```
    0.d0      33.813626d0
   90.d0      33.813626d0
@@ -178,24 +239,7 @@ grep evcm 00.output
  6          1        40
  0.9975     1.d-5
 ```
-原子座標以下のパラメーターについて
 
-```
-29.d0   7　
-```
-原子番号、軌道数
-```
-100   200   210   300   310   325    405
-```
-Cu原子の軌道
-```
-2.d0  2.d0  6.d0  2.d0  6.d0  10.d0  1.d0
-```
-軌道占有電子数
-```
-60.d0    32.d0
-```
-LAPWの原子球のradial meshの刻みの情報となりますが、これらは格子面に依存しません。
 
 
 <br>
@@ -205,5 +249,40 @@ LAPWの原子球のradial meshの刻みの情報となりますが、これら�
 ```
 
 の欄でiterationを指定することができます。初めの６は電子のmixingを指定しています。最新6iterationのinputとoutputを混ぜて次のiterationの電子密度を計算します。次の１は１stを意味し最初から始めることを表しており、計算結果の収束が不十分なときに変更を加えて再度計算する形になります。最後の行はどれだけiterationを回すかを指定でき、この場合40iterationです。
+`param.dat`は
+job scriptは
+
+```
+#!/bin/sh
+#SBATCH -J  Cu_surface
+#SBATCH -p  cmdinteractive
+#SBATCH -N  1
+#SBATCH -n  64
+
+module load intel_compiler/2020.2.254
+module load intel_mpi/2020.2.254
+#Above settings should be consistent with those used in the comparison.
+
+cat $PE_HOSRFILE | awk '{ print$1":"$2/ENVIRON["OMP_NUM_THREADS"]}' >hostfile.$JOB_ID
+srun  ~/EmApw/emapw.out
+rm -f hostfile.$JOB_ID
+```
+
+です。ただし`emapw.out`のパスはご自身のものを指定してください。またコンパイラもご自身の環境により適宜変更してください。
+
+
+計算の収束状況は
+```
+grep "jte, rms" 00.output
+```
+により確認できます。rmsは入力電子密度と出力電子密度の差をユニットセルで平均したものです（Hartree原子単位）。
+<br>
+計算が収束すると
+```
+grep evcm 00.output
+```
+により真空準位を確認することができます。今回のCuのフェルミエネルギー$\mathrm{E}_F$は$0.325\, \mathrm{Hartree}$なので仕事関数は$(\mathrm{evcm}-0.325)\times 27.211386\,eV$と計算でき、結果から仕事関数は4.59eVとなるはずです。
+
+
 
 embedding potentialのパートは編集中です。
