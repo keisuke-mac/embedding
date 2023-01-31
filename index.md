@@ -12,7 +12,7 @@ input.datは
    0.d0      33.813626d0
   90.d0      33.813626d0
  1         0.d0
- 14.1d0    3.5d0
+ 14.1d0    3.5d0                #gmax,gcut
 
 ```
 param.datは
@@ -58,10 +58,10 @@ rm -f hostfile.$JOB_ID
 - d3ps-pot.dat
 - d3mt-pot.dat
 
-の三つになります。一つ目の`kpoint.dat`はksup1での出力ファイルで、あとの二つは`L-apw`での計算結果になります。(編集中)
+の三つになります。一つ目の`kpoint.dat`はksup1での出力ファイルで、あとの二つは`L-apw`での計算結果になります。 それぞれd3ps-pot.datは原子球間の領域、d3mt-pot.datは原子球内の領域になります。(編集中)
 
 
-### ksup1
+
 input.datは
 ```
    0.d0       4.830518d0
