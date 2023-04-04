@@ -1,8 +1,10 @@
-# Embedding法でのDOS計算(未完)
+# Embedding法でのDOS計算
 
 以下で使うプログラムは圧縮ファイルとしてsmith上の`/home/kota/Embedding/compressed_file`に置いてあります。使用される場合は必要なものをこのディレクトリからコピーするようにしてください。
+<br>
+DOSの計算には大きく分けて二段階あります。まず表面の電荷密度計算を行います。その電荷密度の計算結果を用いて、DOSの計算を行います。
 
-## SCF計算におけるgemapw
+## 表面の電荷密度計算のためのembeddingポテンシャル計算
 
 `Cu_001_7x7_scf_embpot.tgz`を任意のディレクトリにコピーします。次にファイルを解凍をしディレクトリ内に移動してください。ここでの計算はksup1とksup2の２ステップに分かれているので順に説明していきます。
 
@@ -62,8 +64,7 @@ rm -f hostfile.$JOB_ID
 - d3ps-pot.dat
 - d3mt-pot.dat
 
-の三つになります。一つ目の`kpoint.dat`はksup1での出力ファイルで、あとの二つは`L-apw`での計算結果になります。 それぞれd3ps-pot.datは原子球間の領域、d3mt-pot.datは原子球内の領域になります。(編集中)
-
+の三つになります。一つ目の`kpoint.dat`はksup1での出力ファイルで、あとの二つは`L-apw`での計算結果になります。 それぞれd3ps-pot.datは原子球間の領域、d3mt-pot.datは原子球内の領域になります。
 
 
 input.datは
@@ -273,7 +274,7 @@ rm -f hostfile.$JOB_ID
 また、embeddingポテンシャル作成に用いられた原子座標などのパラメータが`g_emb.dat`に出力されます。このファイルは次の`emapw`での計算で使用します。また`00.vemb.dat`にembeddingポテンシャルが出力されます。
 
 
-## SCF計算におけるemapw
+## 表面の電荷密度計算
 
 ```
 tar -xvzf Cu_001_7x7_scf.tgz
@@ -405,7 +406,7 @@ grep evcm 00.output
 ```
 により真空準位を確認することができます。今回のCuのフェルミエネルギー$\mathrm{E}_F$は$0.325\, \mathrm{Hartree}$なので仕事関数は$(\mathrm{evcm}-0.325)\times 27.211386\,eV$と計算でき、結果から仕事関数は4.59eVとなるはずです。
 
-## DOS計算でのembeddingポテンシャル
+## DOS計算のためのembeddingポテンシャル計算
 DOS計算でもSCF同様embeddingポテンシャルの計算が必要です。またこの時もSCF同様ksup1とksup2の二段階あります。ただksup１の出力である`kpoint.dat`はscf計算の時のものを使えば良いので、ここではksup2の計算について示します。<br>
 以下のファイルをディレクトリに準備してください。
 
@@ -450,7 +451,43 @@ scf計算の場合
 0  #　実エネルギー軸に平行な線分
 241  -0.04248675d0   0.39850488d0   9.187d-4  #点数、実エネルギー下端、上端、エネルギーの虚部
 ```
-になります。またジョブスクリプトは
+になります。
+`param.dat`は
+```
+! // parameter file
+! // Cu_001_7x7 ksup2
+& param
+
+kopr=8
+kdsp=0
+
+kt=1
+ka=1
+korb=7
+kmsh=461
+
+klmx=7
+klpmx=6
+
+km1=30
+km2=30
+
+kfp=1
+ksup=2
+kbff=3
+
+klt_rad=1
+kcnt=1
+
+k2el=0
+kdiag=1
+kinput_e=1
+btyp='sn'
+/
+
+
+```
+またジョブスクリプトは
 ```
 #$ -S /bin/bash
 #$ -cwd
@@ -617,6 +654,7 @@ rm -f hostfile.$JOB_ID
 ```
 で実行しました。
 
-でプログラムを走らせます。こちらは、SCALAPACKで行列を計算しますので1-k点でも、多数のMPIプロセスで計算できます（例えば64）。数時間？で計算が終了します。DOSの出力ファイルは`00.dos.dat`になります。
+でプログラムを走らせます。こちらは、SCALAPACKで行列を計算しますので1-k点でも、多数のMPIプロセスで計算できます（例えば64）。数時間？で計算が終了します。DOSの出力ファイルは`00.dos.dat`になります。このファイルからs、p、dのそれぞれのバンドのDOSが出力されます。次の画像はDOSのplot結果です。
+
 
 ![dos](dos.png)
