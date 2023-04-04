@@ -619,4 +619,4 @@ rm -f hostfile.$JOB_ID
 
 でプログラムを走らせます。こちらは、SCALAPACKで行列を計算しますので1-k点でも、多数のMPIプロセスで計算できます（例えば64）。数時間？で計算が終了します。DOSの出力ファイルは`00.dos.dat`になります。
 
-![dos](dos.eps)
+![dos](dos.png)
